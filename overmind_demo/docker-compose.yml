@@ -1,0 +1,80 @@
+# CrewAI healthcare demo for Overmind (fixtures only — no FHIR/UI/Postgres).
+services:
+  healthcare-crewai:
+    build:
+      context: ..
+      dockerfile: overmind_demo/crewai_service/Dockerfile
+    image: healthcare-ai/overmind-crewai:demo
+    pull_policy: never
+    container_name: healthcare-crewai
+    env_file:
+      - .env
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+      OVERMIND_DEMO_MODEL: ${OVERMIND_DEMO_MODEL:-openai/gpt-4o-mini}
+      OVERMIND_DEMO_TEMPERATURE: ${OVERMIND_DEMO_TEMPERATURE:-0.2}
+      CREWAI_PORT: "8090"
+      FIXTURES_PATH: /app/fixtures/patients.json
+      PYTHONPATH: /app
+    ports:
+      - "8090:8090"
+    volumes:
+      # Live crew code — Overmind patches under /workspace land here via host bind.
+      - ./crewai_service:/app
+      - ./fixtures:/app/fixtures:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8090/health"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+      start_period: 45s
+
+  # Idle twin of the crew image — paste Jobs-tab `overmind optimize` here.
+  executioner:
+    image: healthcare-ai/overmind-crewai:demo
+    pull_policy: never
+    container_name: healthcare-executioner
+    env_file:
+      - .env
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+      OVERMIND_API_KEY: ${OVERMIND_API_KEY:-}
+      OVERMIND_API_URL: ${OVERMIND_API_URL:-http://host.docker.internal:8000}
+      OVERMIND_PROJECT_ID: ${OVERMIND_PROJECT_ID:-}
+      OVERMIND_AGENT_ID: ${OVERMIND_AGENT_ID:-}
+      OVERMIND_CWD: /workspace
+      AGENT_URL: http://healthcare-crewai:8090
+      AGENT_CONTAINER: healthcare-crewai
+      GIT_AUTHOR_NAME: overmind
+      GIT_AUTHOR_EMAIL: overmind@local
+      GIT_COMMITTER_NAME: overmind
+      GIT_COMMITTER_EMAIL: overmind@local
+      PYTHONPATH: /app
+    volumes:
+      - ../:/workspace
+      - ./:/app/demo
+      - /var/run/docker.sock:/var/run/docker.sock
+    working_dir: /workspace
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      healthcare-crewai:
+        condition: service_healthy
+    entrypoint:
+      - sh
+      - -c
+      - |
+        git config --global user.name "$${GIT_AUTHOR_NAME:-overmind}"
+        git config --global user.email "$${GIT_AUTHOR_EMAIL:-overmind@local}"
+        git config --global --add safe.directory /workspace
+        echo "Executioner ready. Paste the Jobs-tab start command (PyPI), e.g.:"
+        echo "  pip install 'overmind>=0.1.53' && \\"
+        echo "  OVERMIND_CWD=/workspace OVERMIND_API_URL=\$$OVERMIND_API_URL \\"
+        echo "  OVERMIND_API_KEY=... OVERMIND_PROJECT_ID=... overmind optimize"
+        exec sleep infinity
+    restart: unless-stopped

@@ -1,0 +1,6 @@
+[agents.healthcare-crewai]
+entrypoint = "POST /crewai"
+code_trigger = """Long-running HTTP agent. Trigger with requests/curl to http://healthcare-crewai:8090/crewai (JSON body = datapoint input, e.g. {"patient_id":"..."}). Print the response body (or response["output"]) to stdout. Do NOT use Django manage.py shell."""
+description = "CrewAI sequential crew (PCP → cardiologist → pharmacist → nurse) on local chart fixtures"
+module = "overmind_demo.crewai_service.crew:FixtureHealthcareCrew"
+optimizable_hint = "overmind_demo/crewai_service/crew.py"

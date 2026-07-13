@@ -15,6 +15,7 @@ Thumbs.db
 .env.production.local
 .env.development
 .env.test
+overmind_demo/.env
 
 # Python
 .venv/

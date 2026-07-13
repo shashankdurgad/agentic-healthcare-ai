@@ -1,0 +1,167 @@
+{
+  "patient-chest-pain": {
+    "patient_id": "patient-chest-pain",
+    "age": 58,
+    "sex": "male",
+    "chief_complaint": "Crushing substernal chest pain radiating to left arm for 45 minutes, diaphoresis",
+    "history": ["hypertension", "hyperlipidemia", "former smoker"],
+    "medications": ["lisinopril 20mg daily", "atorvastatin 40mg nightly"],
+    "vitals": {"bp": "168/98", "hr": 112, "rr": 22, "spo2": 94, "temp_c": 36.8},
+    "allergies": ["penicillin"],
+    "context": "Arrived by ambulance; pain 8/10"
+  },
+  "patient-uti": {
+    "patient_id": "patient-uti",
+    "age": 34,
+    "sex": "female",
+    "chief_complaint": "Dysuria and urinary frequency for 2 days, no fever",
+    "history": ["recurrent UTI"],
+    "medications": ["oral contraceptive"],
+    "vitals": {"bp": "118/72", "hr": 78, "rr": 14, "spo2": 99, "temp_c": 37.1},
+    "allergies": [],
+    "context": "Otherwise well, ambulatory clinic visit"
+  },
+  "patient-warfarin-bleed": {
+    "patient_id": "patient-warfarin-bleed",
+    "age": 72,
+    "sex": "female",
+    "chief_complaint": "Black tarry stools for 3 days, dizziness today",
+    "history": ["atrial fibrillation", "prior GI bleed", "CKD stage 3"],
+    "medications": ["warfarin 5mg daily", "ibuprofen 400mg PRN", "aspirin 81mg daily"],
+    "vitals": {"bp": "92/58", "hr": 118, "rr": 20, "spo2": 96, "temp_c": 36.5},
+    "allergies": ["sulfa"],
+    "context": "INR unknown; pale and weak"
+  },
+  "patient-stable-htn": {
+    "patient_id": "patient-stable-htn",
+    "age": 49,
+    "sex": "male",
+    "chief_complaint": "Routine blood pressure follow-up, feels well",
+    "history": ["hypertension"],
+    "medications": ["amlodipine 5mg daily"],
+    "vitals": {"bp": "132/84", "hr": 72, "rr": 14, "spo2": 98, "temp_c": 36.6},
+    "allergies": [],
+    "context": "Annual primary care visit"
+  },
+  "patient-anaphylaxis": {
+    "patient_id": "patient-anaphylaxis",
+    "age": 27,
+    "sex": "female",
+    "chief_complaint": "Sudden hives, lip swelling, and wheezing after peanut exposure 10 minutes ago",
+    "history": ["known peanut allergy"],
+    "medications": ["epinephrine auto-injector (not used yet)"],
+    "vitals": {"bp": "88/50", "hr": 130, "rr": 28, "spo2": 91, "temp_c": 36.9},
+    "allergies": ["peanuts"],
+    "context": "Restaurant exposure; audible wheeze"
+  },
+  "patient-asthma-exacerbation": {
+    "patient_id": "patient-asthma-exacerbation",
+    "age": 22,
+    "sex": "male",
+    "chief_complaint": "Worsening wheeze and shortness of breath for 6 hours despite inhaler",
+    "history": ["asthma"],
+    "medications": ["albuterol inhaler PRN", "fluticasone inhaler daily"],
+    "vitals": {"bp": "128/78", "hr": 118, "rr": 28, "spo2": 90, "temp_c": 37.0},
+    "allergies": [],
+    "context": "Speaking in short phrases; accessory muscle use"
+  },
+  "patient-hypoglycemia": {
+    "patient_id": "patient-hypoglycemia",
+    "age": 61,
+    "sex": "female",
+    "chief_complaint": "Confusion, sweating, and tremor this morning",
+    "history": ["type 2 diabetes"],
+    "medications": ["insulin glargine 20 units nightly", "metformin 1000mg BID"],
+    "vitals": {"bp": "110/70", "hr": 108, "rr": 18, "spo2": 98, "temp_c": 36.7},
+    "allergies": [],
+    "context": "Fingerstick glucose 42 mg/dL; skipped breakfast"
+  },
+  "patient-stroke": {
+    "patient_id": "patient-stroke",
+    "age": 69,
+    "sex": "male",
+    "chief_complaint": "Sudden right-sided weakness and slurred speech starting 50 minutes ago",
+    "history": ["hypertension", "atrial fibrillation"],
+    "medications": ["apixaban 5mg BID", "metoprolol 50mg BID"],
+    "vitals": {"bp": "178/96", "hr": 96, "rr": 16, "spo2": 97, "temp_c": 36.8},
+    "allergies": [],
+    "context": "Last known well 50 minutes ago; facial droop present"
+  },
+  "patient-cellulitis": {
+    "patient_id": "patient-cellulitis",
+    "age": 45,
+    "sex": "male",
+    "chief_complaint": "Red swollen left lower leg for 3 days, mild pain, no fever",
+    "history": ["obesity"],
+    "medications": ["none"],
+    "vitals": {"bp": "130/82", "hr": 84, "rr": 14, "spo2": 98, "temp_c": 37.3},
+    "allergies": [],
+    "context": "Ambulatory clinic; no crepitus or rapidly spreading streaking"
+  },
+  "patient-depression-fu": {
+    "patient_id": "patient-depression-fu",
+    "age": 38,
+    "sex": "female",
+    "chief_complaint": "Depression follow-up, mood improved on sertraline, no SI",
+    "history": ["major depressive disorder"],
+    "medications": ["sertraline 50mg daily"],
+    "vitals": {"bp": "118/76", "hr": 70, "rr": 14, "spo2": 99, "temp_c": 36.6},
+    "allergies": [],
+    "context": "Telehealth/primary care follow-up; denies suicidal ideation"
+  },
+  "patient-digoxin-toxicity": {
+    "patient_id": "patient-digoxin-toxicity",
+    "age": 78,
+    "sex": "female",
+    "chief_complaint": "Nausea, visual halos, and slow pulse for 2 days",
+    "history": ["heart failure", "CKD stage 4"],
+    "medications": ["digoxin 0.25mg daily", "furosemide 40mg daily", "lisinopril 10mg daily"],
+    "vitals": {"bp": "100/60", "hr": 44, "rr": 16, "spo2": 96, "temp_c": 36.5},
+    "allergies": [],
+    "context": "Recent viral illness with reduced oral intake; digoxin level pending"
+  },
+  "patient-pregnancy-nausea": {
+    "patient_id": "patient-pregnancy-nausea",
+    "age": 29,
+    "sex": "female",
+    "chief_complaint": "Morning nausea at 9 weeks pregnant, able to keep fluids down",
+    "history": ["G1P0 intrauterine pregnancy"],
+    "medications": ["prenatal vitamin"],
+    "vitals": {"bp": "112/70", "hr": 82, "rr": 14, "spo2": 99, "temp_c": 36.7},
+    "allergies": [],
+    "context": "OB clinic visit; no abdominal pain, no bleeding, no dehydration"
+  },
+  "patient-sepsis": {
+    "patient_id": "patient-sepsis",
+    "age": 66,
+    "sex": "male",
+    "chief_complaint": "Fever, chills, and lethargy for 1 day after recent UTI",
+    "history": ["BPH", "recent UTI"],
+    "medications": ["tamsulosin 0.4mg daily"],
+    "vitals": {"bp": "86/50", "hr": 124, "rr": 26, "spo2": 93, "temp_c": 39.2},
+    "allergies": [],
+    "context": "ED triage; mottled skin; lactate pending"
+  },
+  "patient-migraine": {
+    "patient_id": "patient-migraine",
+    "age": 31,
+    "sex": "female",
+    "chief_complaint": "Typical migraine with photophobia for 8 hours, usual pattern",
+    "history": ["migraine without aura"],
+    "medications": ["sumatriptan PRN", "oral contraceptive"],
+    "vitals": {"bp": "122/78", "hr": 76, "rr": 14, "spo2": 99, "temp_c": 36.6},
+    "allergies": [],
+    "context": "Neurology/primary care urgent slot; no thunderclap onset, no fever, neuro exam nonfocal"
+  },
+  "patient-peds-fever": {
+    "patient_id": "patient-peds-fever",
+    "age": 3,
+    "sex": "male",
+    "chief_complaint": "Fever to 38.5 C for 1 day, playful, drinking well",
+    "history": ["none"],
+    "medications": ["acetaminophen PRN"],
+    "vitals": {"bp": "95/60", "hr": 120, "rr": 24, "spo2": 99, "temp_c": 38.5},
+    "allergies": [],
+    "context": "Pediatric clinic; no rash, no lethargy, immunizations up to date"
+  }
+}

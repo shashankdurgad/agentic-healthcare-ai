@@ -1,0 +1,62 @@
+{
+  "version": 2,
+  "agent": "healthcare-crewai",
+  "eval_mode": "judge_only",
+  "input_schema": {
+    "patient_id": "string"
+  },
+  "output_schema": {
+    "patient_id": "string",
+    "framework": "crewai",
+    "care_plan": "string",
+    "task_outputs": "object[]",
+    "summary": "object|null"
+  },
+  "metrics": [
+    {
+      "id": "must_mention_coverage",
+      "type": "list_contains_in_output_text",
+      "source": "extra.must_mention",
+      "weight": 0.45,
+      "description": "Crew care_plan / task_outputs text must cover fixture-derived must_mention tokens. These are deterministic chart facts, not clinical gold labels."
+    },
+    {
+      "id": "policy_grounding",
+      "type": "llm_judge",
+      "weight": 0.4,
+      "description": "Output is grounded in the chart, does not invent findings, and follows policies.md safety/grounding rules."
+    },
+    {
+      "id": "actionability",
+      "type": "llm_judge",
+      "field": "care_plan",
+      "weight": 0.15,
+      "description": "Care plan / nurse synthesis includes concrete next steps consistent with chart acuity."
+    }
+  ],
+  "labeling_notes": {
+    "expected_output": null,
+    "why": "Synthetic LLM urgency/specialty labels are not valid ground truth. Use judge-only + fixture-derived must_mention."
+  },
+  "scope": {
+    "optimizable_paths": [
+      "overmind_demo/crewai_service/crew.py"
+    ],
+    "context_paths": [
+      "overmind_demo/fixtures/patients.json",
+      "overmind_demo/.overmind/policies.md"
+    ],
+    "exclude_paths": [
+      "ui/**",
+      "docker/**",
+      "kubernetes/**",
+      "docs/**",
+      "crewai_fhir_agent/**",
+      "autogen_fhir_agent/**",
+      "agent_backend/**",
+      "fhir_mcp_server/**",
+      "fhir_proxy/**"
+    ]
+  },
+  "eval_command_hint": "python -c \"import json,requests; print(requests.post('http://healthcare-crewai:8090/crewai', json=__DATAPOINT_INPUT__).json())\""
+}
