@@ -329,10 +329,13 @@ class FixtureHealthcareCrew:
             goal="Assess the patient comprehensively and identify urgency and red flags",
             backstory=(
                 "Experienced primary care physician focused on triage, problem lists, "
-                "and coordinating specialists. Always load the chart via fhir_patient_chart."
+                "and coordinating specialists. Always load the chart via fhir_patient_chart. "
+                "When medication risk is material, you actively consult pharmacy by using the "
+                "'Delegate work to coworker' or 'Ask question to coworker' tools."
             ),
             verbose=True,
-            allow_delegation=False,
+            allow_delegation=True,
+            max_iter=12,
             tools=[self.chart_tool],
             llm=self.llm,
         )
@@ -344,7 +347,8 @@ class FixtureHealthcareCrew:
                 "and evidence-based cardiac recommendations."
             ),
             verbose=True,
-            allow_delegation=False,
+            allow_delegation=True,
+            max_iter=8,
             tools=[self.chart_tool],
             llm=self.llm,
         )
@@ -353,23 +357,27 @@ class FixtureHealthcareCrew:
             goal="Ensure medication safety and flag interaction or bleed risks",
             backstory=(
                 "Clinical pharmacist focused on reconciliation, interactions, "
-                "and high-risk drug combinations."
+                "and high-risk drug combinations. When consulted mid-case, answer "
+                "concisely with concrete interaction findings."
             ),
             verbose=True,
             allow_delegation=False,
+            max_iter=8,
             tools=[self.chart_tool, self.med_tool],
             llm=self.llm,
         )
         self.nurse = Agent(
             role="Nurse Care Coordinator",
-            goal="Produce an actionable care coordination and follow-up plan",
+            goal="Produce an actionable care coordination and follow-up plan with a final JSON summary",
             backstory=(
-                "Nurse care coordinator who turns specialist input into clear next "
-                "steps, education, and escalation plans."
+                "Nurse care coordinator who synthesizes specialist notes into clear next "
+                "steps. You do not need to re-fetch charts or call tools — write the plan "
+                "directly from the PCP, cardiology, and pharmacy context you already have."
             ),
             verbose=True,
             allow_delegation=False,
-            tools=[self.chart_tool],
+            max_iter=4,
+            tools=[],  # synthesis-only; chart tools caused iteration-limit loops
             llm=self.llm,
         )
 
@@ -385,18 +393,29 @@ class FixtureHealthcareCrew:
 
         pcp_task = Task(
             description=(
-                f"Call fhir_patient_chart for patient_id '{patient_id}'. "
-                f"Seeded chart snapshot (may be incomplete — prefer the tool):\n{case_json}\n"
-                "Produce: problem list, red flags, urgency (routine|urgent|emergent|stat), "
-                "and what cardiology/pharmacy should focus on. Do not invent findings."
+                f"Call fhir_patient_chart ONCE for patient_id '{patient_id}'. "
+                f"Chart snapshot:\n{case_json}\n"
+                "Then you MUST invoke the tool named exactly: Delegate work to coworker\n"
+                "Action Input must be JSON with keys coworker, task, and context, e.g.\n"
+                '{"coworker":"Clinical Pharmacist","task":"Review bleed risk with medication_safety_check","context":"meds: warfarin, ibuprofen, aspirin; vitals BP 92/58 HR 118; melena"}\n'
+                "Do not use a 'message' key. Do not only say you will delegate — the Action line must be "
+                "'Delegate work to coworker'. After you receive the pharmacist reply, write your "
+                "assessment: problem list, red flags, urgency (routine|urgent|emergent|stat), "
+                "and include a section 'Clinical Pharmacist Consult Result' with their answer. "
+                "Do not invent findings."
             ),
-            expected_output="Primary care assessment with urgency and red flags",
+            expected_output=(
+                "Primary care assessment that includes a completed Clinical Pharmacist "
+                "consult obtained via Delegate work to coworker"
+            ),
             agent=self.primary_care,
         )
         cardio_task = Task(
             description=(
                 f"Given the PCP assessment and FHIR patient '{patient_id}', perform cardiovascular "
-                "risk/ACS assessment. Use fhir_patient_chart if needed. State cardiac concerns and recommendations."
+                "risk/ACS assessment. Use fhir_patient_chart if needed. "
+                "If anticoagulation or arrhythmia management is involved, you MAY delegate a focused "
+                "question to the Clinical Pharmacist. State cardiac concerns and recommendations."
             ),
             expected_output="Cardiology assessment and recommendations",
             agent=self.cardiologist,
@@ -405,7 +424,8 @@ class FixtureHealthcareCrew:
         pharm_task = Task(
             description=(
                 f"Review medications for FHIR patient '{patient_id}'. Use fhir_patient_chart and "
-                "medication_safety_check. Flag interactions, bleed risk, allergy issues, and pharmacy actions."
+                "medication_safety_check. Flag interactions, bleed risk, allergy issues, and pharmacy actions. "
+                "If a cardiac question remains, you MAY delegate to the Cardiologist."
             ),
             expected_output="Pharmacy safety review with concrete concerns",
             agent=self.pharmacist,
@@ -413,12 +433,20 @@ class FixtureHealthcareCrew:
         )
         nurse_task = Task(
             description=(
-                "Integrate PCP, cardiology, and pharmacy findings into a care plan: "
-                "ordered next actions, patient education, follow-up timing, and escalation destination. "
-                "End with a JSON block containing keys: urgency, primary_specialty, red_flags, "
-                "assessment_summary, recommended_actions, medication_concerns."
+                "Using ONLY the prior PCP, cardiology, and pharmacy findings (already in context), "
+                "write a concrete care coordination plan. Do NOT call any tools. Do NOT say a plan "
+                "'has been developed' — write the actual content:\n"
+                "1) Urgency and escalation destination (ED / clinic / home)\n"
+                "2) Ordered next actions (numbered)\n"
+                "3) Patient education points\n"
+                "4) Follow-up timing\n"
+                "Then end with a markdown fenced JSON block (```json ... ```) containing exactly these keys:\n"
+                "urgency, primary_specialty, red_flags, assessment_summary, recommended_actions, medication_concerns."
             ),
-            expected_output="Care plan plus final JSON summary",
+            expected_output=(
+                "Concrete care plan with numbered actions, plus a ```json``` block with "
+                "urgency, primary_specialty, red_flags, assessment_summary, recommended_actions, medication_concerns"
+            ),
             agent=self.nurse,
             context=[pcp_task, cardio_task, pharm_task],
         )
@@ -429,6 +457,23 @@ class FixtureHealthcareCrew:
             process=Process.sequential,
             verbose=True,
         )
+        # CrewAI 0.51 quirk: _prepare_agent_tools() appends Delegate/Ask tools onto
+        # task.tools, but _execute_tasks() passes agent.tools into the executor.
+        # Attach delegation tools on the agents themselves so they are actually usable.
+        for agent in crew.agents:
+            if not getattr(agent, "allow_delegation", False):
+                continue
+            others = [a for a in crew.agents if a is not agent]
+            if not others:
+                continue
+            delegation_tools = agent.get_delegation_tools(others)
+            existing = {getattr(t, "name", None) for t in (agent.tools or [])}
+            merged = list(agent.tools or [])
+            for tool in delegation_tools:
+                if getattr(tool, "name", None) not in existing:
+                    merged.append(tool)
+            agent.tools = merged
+
         result = crew.kickoff()
 
         task_outputs: list[dict[str, Any]] = []
