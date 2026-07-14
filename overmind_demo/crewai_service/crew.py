@@ -301,7 +301,7 @@ def build_llm() -> ChatOpenAI:
     if not api_key:
         raise RuntimeError("OPENROUTER_API_KEY or OPENAI_API_KEY is required")
 
-    model = os.environ.get("OVERMIND_DEMO_MODEL", "openai/gpt-4o-mini")
+    model = os.environ.get("OVERMIND_DEMO_MODEL", "qwen/qwen3.6-35b-a3b")
     base_url = os.environ.get("OPENAI_BASE_URL") or os.environ.get("OPENROUTER_BASE_URL")
     if not base_url and os.environ.get("OPENROUTER_API_KEY"):
         base_url = "https://openrouter.ai/api/v1"

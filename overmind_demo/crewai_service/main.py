@@ -63,7 +63,7 @@ class Handler(BaseHTTPRequestHandler):
                     "openai_key_set": bool(
                         os.environ.get("OPENROUTER_API_KEY") or os.environ.get("OPENAI_API_KEY")
                     ),
-                    "model": os.environ.get("OVERMIND_DEMO_MODEL", "openai/gpt-4o-mini"),
+                    "model": os.environ.get("OVERMIND_DEMO_MODEL", "qwen/qwen3.6-35b-a3b"),
                 },
             )
         else:

@@ -23,7 +23,7 @@ healthcare-executioner  ← paste Jobs-tab `overmind optimize`
 
 ```bash
 cd overmind_demo
-cp .env.example .env   # OPENROUTER_API_KEY or OPENAI_API_KEY
+cp .env.example .env   # OPENROUTER_API_KEY; default model qwen/qwen3.6-35b-a3b
 ./scripts/up.sh
 ./scripts/smoke.sh
 ```
