@@ -1,0 +1,15 @@
+{"input": {"patient_id": "patient-chest-pain"}, "expected_output": null, "id": "patient-chest-pain", "judge_only": true, "must_mention": ["tachycardia", "hypoxia", "chest pain", "diaphoresis", "radiation", "hypertension", "penicillin"]}
+{"input": {"patient_id": "patient-uti"}, "expected_output": null, "id": "patient-uti", "judge_only": true, "must_mention": ["dysuria", "recurrent uti"]}
+{"input": {"patient_id": "patient-warfarin-bleed"}, "expected_output": null, "id": "patient-warfarin-bleed", "judge_only": true, "must_mention": ["hypotension", "tachycardia", "melena", "warfarin", "ibuprofen", "aspirin", "bleed risk", "atrial fibrillation", "prior gi bleed", "ckd stage 3", "sulfa"]}
+{"input": {"patient_id": "patient-stable-htn"}, "expected_output": null, "id": "patient-stable-htn", "judge_only": true, "must_mention": ["blood pressure", "hypertension", "amlodipine"]}
+{"input": {"patient_id": "patient-anaphylaxis"}, "expected_output": null, "id": "patient-anaphylaxis", "judge_only": true, "must_mention": ["hypotension", "tachycardia", "tachypnea", "hypoxia", "wheeze", "lip swelling", "hives", "peanut", "known peanut allergy"]}
+{"input": {"patient_id": "patient-asthma-exacerbation"}, "expected_output": null, "id": "patient-asthma-exacerbation", "judge_only": true, "must_mention": ["tachycardia", "tachypnea", "hypoxia", "wheeze", "accessory muscle use", "asthma"]}
+{"input": {"patient_id": "patient-hypoglycemia"}, "expected_output": null, "id": "patient-hypoglycemia", "judge_only": true, "must_mention": ["tachycardia", "confusion", "hypoglycemia", "insulin", "type 2 diabetes"]}
+{"input": {"patient_id": "patient-stroke"}, "expected_output": null, "id": "patient-stroke", "judge_only": true, "must_mention": ["slurred speech", "weakness", "facial droop", "hypertension", "atrial fibrillation"]}
+{"input": {"patient_id": "patient-cellulitis"}, "expected_output": null, "id": "patient-cellulitis", "judge_only": true, "must_mention": ["erythema"]}
+{"input": {"patient_id": "patient-depression-fu"}, "expected_output": null, "id": "patient-depression-fu", "judge_only": true, "must_mention": ["sertraline", "no suicidal ideation", "major depressive disorder"]}
+{"input": {"patient_id": "patient-digoxin-toxicity"}, "expected_output": null, "id": "patient-digoxin-toxicity", "judge_only": true, "must_mention": ["bradycardia", "visual changes", "digoxin", "heart failure", "ckd stage 4"]}
+{"input": {"patient_id": "patient-pregnancy-nausea"}, "expected_output": null, "id": "patient-pregnancy-nausea", "judge_only": true, "must_mention": ["pregnancy", "g1p0 intrauterine pregnancy"]}
+{"input": {"patient_id": "patient-sepsis"}, "expected_output": null, "id": "patient-sepsis", "judge_only": true, "must_mention": ["hypotension", "tachycardia", "tachypnea", "hypoxia", "fever", "mottled skin", "recent uti"]}
+{"input": {"patient_id": "patient-migraine"}, "expected_output": null, "id": "patient-migraine", "judge_only": true, "must_mention": ["migraine"]}
+{"input": {"patient_id": "patient-peds-fever"}, "expected_output": null, "id": "patient-peds-fever", "judge_only": true, "must_mention": ["tachycardia", "tachypnea", "fever", "age 3"]}

@@ -50,7 +50,7 @@ docker compose run --rm fhir-seed
 | **code_trigger** | `Long-running HTTP agent. Trigger with requests/curl to http://healthcare-crewai:8090/crewai (JSON body = datapoint input). Print the response body (or response["output"]) to stdout. Do NOT use Django manage.py shell.` |
 
 Optimizable file: `overmind_demo/crewai_service/crew.py`  
-Eval seeds: `.overmind/` (judge-only; `must_mention` still derived from fixtures)
+Eval seeds: `eval/` (judge-only; `must_mention` still derived from fixtures)
 
 ```bash
 python scripts/generate_eval_dataset.py
@@ -78,7 +78,7 @@ overmind_demo/
 ├── fixtures/           # seed source (same patient_* IDs as FHIR)
 ├── scripts/seed_fhir.py
 ├── docker-compose.yml  # hapi + mcp + seed + crewai + executioner
-└── .overmind/
+└── eval/               # dataset, policies, eval_spec
 ```
 
 Ports: HAPI `8085` (container `8080`), MCP `8004`, CrewAI `8090`.

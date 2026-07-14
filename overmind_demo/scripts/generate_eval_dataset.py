@@ -1,8 +1,13 @@
 #!/usr/bin/env python3
 """Regenerate judge-only Overmind dataset from fixtures.
 
-must_mention is derived deterministically from vitals/meds/literal chart text.
-expected_output is always null (no synthetic clinical gold).
+must_mention is fixture-grounded but uses clinical phrasing agents are expected
+to write (aligned with eval/policies.md):
+- abnormal vitals → hypotension / tachycardia / etc. (from fixture thresholds)
+- chart phrases → standard clinical tokens (e.g. tarry stools → melena)
+- meds / allergies / key history as written in the fixture
+
+expected_output is always null. Rows are flat (no nested extra).
 """
 
 from __future__ import annotations
@@ -13,8 +18,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "fixtures" / "patients.json"
-OUT_JSONL = ROOT / ".overmind" / "dataset.jsonl"
-OUT_JSON = ROOT / ".overmind" / "dataset.json"
+OUT_JSONL = ROOT / "eval" / "dataset.jsonl"
+OUT_JSON = ROOT / "eval" / "dataset.json"
 
 
 def parse_bp(bp: str):
@@ -31,13 +36,21 @@ def derive_must_mention(chart: dict) -> list[str]:
     spo2 = vitals.get("spo2")
     temp = vitals.get("temp_c")
     meds = " ".join(chart.get("medications") or []).lower()
-    allergies = [a.lower() for a in (chart.get("allergies") or [])]
+    allergies = [str(a).lower() for a in (chart.get("allergies") or []) if a]
+    history = [
+        str(h).lower()
+        for h in (chart.get("history") or [])
+        if h and str(h).lower() != "none"
+    ]
     complaint = (chart.get("chief_complaint") or "").lower()
     context = (chart.get("context") or "").lower()
-    history = " ".join(chart.get("history") or []).lower()
-    blob = f"{complaint} {context} {history} {meds}"
+    blob = f"{complaint} {context} {' '.join(history)} {meds}"
 
-    if sys is not None and sys < 90:
+    # Clinical vital labels (match policies.md). Thresholds applied to fixture numbers.
+    # Adults: sys < 100 → hypotension (catches warfarin 92/58). Classic shock: sys < 90 any age.
+    age = chart.get("age")
+    adult = age is None or int(age) >= 18
+    if sys is not None and (sys < 90 or (adult and sys < 100)):
         must.append("hypotension")
     if hr is not None and hr >= 100:
         must.append("tachycardia")
@@ -50,12 +63,13 @@ def derive_must_mention(chart: dict) -> list[str]:
     if temp is not None and temp >= 38.0:
         must.append("fever")
 
-    literals = [
+    # Fixture evidence → clinical token the model is expected to use in prose.
+    phrase_to_clinical = [
         ("chest pain", "chest pain"),
         ("diaphoresis", "diaphoresis"),
         ("radiating", "radiation"),
-        ("melena", "melena"),
         ("tarry", "melena"),
+        ("melena", "melena"),
         ("wheez", "wheeze"),
         ("lip swelling", "lip swelling"),
         ("hives", "hives"),
@@ -71,35 +85,67 @@ def derive_must_mention(chart: dict) -> list[str]:
         ("digoxin", "digoxin"),
         ("pregnant", "pregnancy"),
         ("migraine", "migraine"),
-        ("red swollen", "leg erythema"),
+        ("red swollen", "erythema"),
         ("sertraline", "sertraline"),
         ("no si", "no suicidal ideation"),
+        ("suicidal ideation", "no suicidal ideation"),
         ("accessory muscle", "accessory muscle use"),
         ("mottled", "mottled skin"),
+        ("blood pressure", "blood pressure"),
+        ("hypertension", "hypertension"),
+        ("warfarin", "warfarin"),
+        ("ibuprofen", "ibuprofen"),
+        ("aspirin", "aspirin"),
+        ("insulin", "insulin"),
+        ("amlodipine", "amlodipine"),
     ]
-    for needle, label in literals:
+    for needle, label in phrase_to_clinical:
         if needle in blob and label not in must:
             must.append(label)
 
     nsaid = any(x in meds for x in ["ibuprofen", "naproxen", "diclofenac", "nsaid"])
     if "warfarin" in meds and (nsaid or "aspirin" in meds):
-        must.append("anticoagulant bleed risk")
-    if "insulin" in meds and ("42" in context or "glucose" in context):
-        must.append("insulin")
-    if "digoxin" in meds and "digoxin" not in must:
-        must.append("digoxin")
-    for a in allergies:
-        if a:
-            must.append(f"allergy:{a}")
-    if chart.get("age") is not None and chart["age"] < 18:
-        must.append(f"age:{chart['age']}")
+        if "bleed risk" not in must:
+            must.append("bleed risk")
+
+    # High-signal history only (skip dumping every chronic item).
+    history_keep = {
+        "atrial fibrillation",
+        "prior gi bleed",
+        "ckd stage 3",
+        "ckd stage 4",
+        "heart failure",
+        "type 2 diabetes",
+        "asthma",
+        "known peanut allergy",
+        "major depressive disorder",
+        "g1p0 intrauterine pregnancy",
+        "recurrent uti",
+        "recent uti",
+    }
+    for item in history:
+        if item in history_keep and item not in must:
+            must.append(item)
+
+    for allergy in allergies:
+        # Prefer a single peanut token if both peanut/peanuts appear.
+        if allergy in {"peanut", "peanuts"}:
+            if "peanut" not in must:
+                must.append("peanut")
+            continue
+        if allergy not in must:
+            must.append(allergy)
+
+    if chart.get("age") is not None and int(chart["age"]) < 18:
+        must.append(f"age {chart['age']}")
 
     seen: set[str] = set()
     out: list[str] = []
     for item in must:
-        if item not in seen:
-            seen.add(item)
-            out.append(item)
+        key = item.lower().strip()
+        if key and key not in seen:
+            seen.add(key)
+            out.append(key)
     return out
 
 
@@ -107,40 +153,45 @@ def main() -> None:
     fixtures = json.loads(FIXTURES.read_text())
     rows = []
     for pid, chart in fixtures.items():
+        mentions = derive_must_mention(chart)
+        if not mentions:
+            raise SystemExit(f"empty must_mention for {pid}")
         rows.append(
             {
                 "input": {"patient_id": pid},
                 "expected_output": None,
-                "extra": {
-                    "id": pid,
-                    "label_source": "fixture_derived_must_mention_only",
-                    "must_mention": derive_must_mention(chart),
-                    "judge_only": True,
-                },
+                "id": pid,
+                "judge_only": True,
+                "must_mention": mentions,
             }
         )
 
+    OUT_JSONL.parent.mkdir(parents=True, exist_ok=True)
     OUT_JSONL.write_text("\n".join(json.dumps(r, ensure_ascii=False) for r in rows) + "\n")
     bundle = {
         "intent": "eval",
         "agent": "healthcare-crewai",
-        "description": "Judge-only dataset. expected_output is null. extra.must_mention is fixture-derived.",
+        "description": (
+            "Judge-only dataset. expected_output is null. "
+            "must_mention uses clinical tokens grounded in fixture facts/thresholds."
+        ),
         "labeling": {
             "expected_output": None,
             "must_mention_rules": [
-                "systolic BP < 90 → hypotension",
+                "systolic BP < 90 → hypotension (any age); adults also if BP < 100 (e.g. 92/58)",
                 "HR >= 100 → tachycardia; HR < 50 → bradycardia",
-                "RR >= 24 → tachypnea",
-                "SpO2 <= 94 → hypoxia",
-                "temp_c >= 38 → fever",
-                "warfarin + NSAID/aspirin → anticoagulant bleed risk",
-                "literal complaint/context phrases and listed allergies must be reflected",
+                "RR >= 24 → tachypnea; SpO2 <= 94 → hypoxia; temp >= 38 → fever",
+                "Fixture phrases map to clinical tokens (tarry→melena, radiating→radiation, etc.)",
+                "warfarin + NSAID/aspirin → bleed risk",
+                "No bare vital numbers; no nested extra",
             ],
         },
         "datapoints": rows,
     }
     OUT_JSON.write_text(json.dumps(bundle, indent=2, ensure_ascii=False) + "\n")
     print(f"wrote {len(rows)} datapoints -> {OUT_JSONL}")
+    for r in rows:
+        print(f"  {r['id']}: {r['must_mention']}")
 
 
 if __name__ == "__main__":

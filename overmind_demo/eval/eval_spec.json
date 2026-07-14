@@ -16,9 +16,9 @@
     {
       "id": "must_mention_coverage",
       "type": "list_contains_in_output_text",
-      "source": "extra.must_mention",
+      "source": "must_mention",
       "weight": 0.45,
-      "description": "Crew care_plan / task_outputs text must cover fixture-derived must_mention tokens. These are deterministic chart facts, not clinical gold labels."
+      "description": "Crew care_plan / task_outputs text must cover clinical must_mention tokens derived from fixture facts/thresholds (aligned with policies.md)."
     },
     {
       "id": "policy_grounding",
@@ -45,7 +45,7 @@
     "context_paths": [
       "overmind_demo/fixtures/patients.json",
       "overmind_demo/scripts/seed_fhir.py",
-      "overmind_demo/.overmind/policies.md"
+      "overmind_demo/eval/policies.md"
     ],
     "exclude_paths": [
       "ui/**",
