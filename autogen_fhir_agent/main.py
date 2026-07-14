@@ -16,6 +16,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import json
 import sys
+from overmind import entry_point, init, workflow
 
 # Add shared modules to path
 import os
@@ -157,6 +158,8 @@ async def startup_event():
     from dotenv import load_dotenv
     load_dotenv(dotenv_path='../.env')
 
+    init(service_name="AutoGen Healthcare FHIR Agent")
+
     try:
         # Configure FHIR client
         fhir_config = FHIRConfig(
@@ -219,6 +222,7 @@ async def health_check():
 
 
 @app.post("/conversation/comprehensive", response_model=ConversationResponse)
+@entry_point("AutoGen Healthcare FHIR Agent")
 async def start_comprehensive_conversation(
     request: ConversationRequest,
     background_tasks: BackgroundTasks,
@@ -261,6 +265,7 @@ async def start_comprehensive_conversation(
 
 
 @app.post("/conversation/emergency", response_model=ConversationResponse)
+@workflow("emergency")
 async def start_emergency_conversation(
     request: EmergencyConversationRequest,
     background_tasks: BackgroundTasks,
@@ -303,6 +308,7 @@ async def start_emergency_conversation(
 
 
 @app.post("/conversation/medication-review", response_model=ConversationResponse)
+@workflow("medication_reconciliation")
 async def start_medication_review_conversation(
     request: MedicationReviewRequest,
     background_tasks: BackgroundTasks,
@@ -556,6 +562,7 @@ async def generate_assessment_pdf(
 
 # Frontend-compatible endpoints (match the paths expected by the UI)
 @app.post("/comprehensive")
+@workflow("comprehensive")
 async def run_comprehensive_conversation_compat(
     request: ConversationRequest,
     background_tasks: BackgroundTasks,

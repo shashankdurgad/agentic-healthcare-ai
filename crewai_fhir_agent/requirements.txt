@@ -21,4 +21,5 @@ aiofiles==23.2.1
 # PDF generation and MCP dependencies
 reportlab==4.0.7
 aiohttp==3.13.3
-pathlib 
+pathlib
+overmind>=0.1.53
