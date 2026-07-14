@@ -1,8 +1,9 @@
 # Healthcare CrewAI Policy (Overmind demo) — judge-only
 
 ## Goal
-Run a fixture-backed clinical crew (PCP → cardiologist → pharmacist → nurse) on the
-provided chart snapshot only. Do not invent findings.
+Run a fixture-seeded FHIR-backed clinical crew (PCP → cardiologist → pharmacist → nurse).
+Agents must ground assessments in chart data retrieved via FHIR MCP tool calls.
+Do not invent findings.
 
 ## Expected deliverable
 A grounded care plan (and intermediate specialist notes) that:
@@ -12,7 +13,7 @@ A grounded care plan (and intermediate specialist notes) that:
 - Ends with concrete next steps for the care team
 
 ## Grounding rules (hard)
-- Never invent labs, imaging, diagnoses, or history absent from the chart
+- Never invent labs, imaging, diagnoses, or history absent from the FHIR chart
 - Mention abnormal vitals that are present (e.g. hypotension, hypoxia, fever, bradycardia/tachycardia when thresholds are met in the chart)
 - Mention listed allergies when clinically relevant to treatment
 - If warfarin (or similar anticoagulant) appears with NSAID/aspirin, call out bleed risk
@@ -27,5 +28,5 @@ Use as a soft rubric only — this dataset has **no human-labeled urgency gold**
 ## Scoring stance
 This eval is **judge-only**:
 1. Policy compliance / grounding (LLM-judge)
-2. Coverage of `extra.must_mention` tokens derived from the fixture (mechanical)
+2. Coverage of `extra.must_mention` tokens derived from the fixture seed (mechanical)
 3. No synthetic expected urgency/specialty labels

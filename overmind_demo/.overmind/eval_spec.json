@@ -44,6 +44,7 @@
     ],
     "context_paths": [
       "overmind_demo/fixtures/patients.json",
+      "overmind_demo/scripts/seed_fhir.py",
       "overmind_demo/.overmind/policies.md"
     ],
     "exclude_paths": [

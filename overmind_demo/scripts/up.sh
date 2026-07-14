@@ -21,20 +21,28 @@ if [[ -z "${OPENAI_API_KEY:-}${OPENROUTER_API_KEY:-}" ]]; then
 fi
 
 docker compose up -d --build
-echo "Waiting for CrewAI health..."
-for _ in $(seq 1 60); do
-  if curl -sf http://localhost:8090/health >/dev/null; then
+echo "Waiting for HAPI / MCP / CrewAI..."
+for _ in $(seq 1 90); do
+  if curl -sf http://localhost:8085/fhir/metadata >/dev/null \
+    && curl -sf http://localhost:8004/health >/dev/null \
+    && curl -sf http://localhost:8090/health >/dev/null; then
+    echo "==> HAPI metadata ok"
+    echo "==> MCP health"
+    curl -sf http://localhost:8004/health | python3 -m json.tool || true
+    echo "==> CrewAI health"
     curl -sf http://localhost:8090/health | python3 -m json.tool
     echo
+    echo "HAPI:         http://localhost:8085/fhir"
+    echo "FHIR MCP:     http://localhost:8004"
     echo "CrewAI:       http://localhost:8090"
     echo "Executioner:  docker exec -it healthcare-executioner bash"
     echo "Smoke:        ./scripts/smoke.sh"
-    echo "Then paste Jobs-tab: pip install 'overmind>=0.1.53' && OVERMIND_CWD=/workspace ... overmind optimize"
     exit 0
   fi
-  sleep 2
+  sleep 3
 done
 
-echo "CrewAI failed to become healthy" >&2
+echo "Services failed to become healthy" >&2
+docker compose ps
 docker compose logs --tail=80
 exit 1

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""HTTP API for fixture-backed CrewAI healthcare crew.
+"""HTTP API for CrewAI healthcare crew (FHIR via MCP).
 
   GET  /health
   POST /crewai   {"patient_id": "..."} -> crew result
@@ -58,7 +58,8 @@ class Handler(BaseHTTPRequestHandler):
                     "status": "ok",
                     "service": "healthcare-crewai",
                     "framework": "crewai",
-                    "fixtures": True,
+                    "fhir_mcp": True,
+                    "fhir_mcp_url": os.environ.get("FHIR_MCP_URL", ""),
                     "openai_key_set": bool(
                         os.environ.get("OPENROUTER_API_KEY") or os.environ.get("OPENAI_API_KEY")
                     ),
