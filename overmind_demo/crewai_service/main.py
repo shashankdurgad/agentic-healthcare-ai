@@ -15,6 +15,8 @@ import traceback
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
+from overmind import entry_point, init
+
 ROOT = Path(__file__).resolve().parent
 DEMO_ROOT = ROOT.parent
 for path in (str(ROOT), str(DEMO_ROOT)):
@@ -36,6 +38,11 @@ def get_crew():
 
         _crew = FixtureHealthcareCrew()
     return _crew
+
+
+@entry_point("Overmind Demo Healthcare Crew")
+def run_healthcare_crew(payload: dict) -> dict:
+    return get_crew().run(payload)
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -89,7 +96,7 @@ class Handler(BaseHTTPRequestHandler):
 
         log.info("CrewAI run: %s", payload.get("patient_id") or payload.get("chief_complaint"))
         try:
-            output = get_crew().run(payload)
+            output = run_healthcare_crew(payload)
             self._send_json(200, {"output": output})
         except Exception as exc:
             log.error("CrewAI error: %s", traceback.format_exc())
@@ -97,6 +104,7 @@ class Handler(BaseHTTPRequestHandler):
 
 
 if __name__ == "__main__":
+    init(service_name="Overmind Demo Healthcare Crew")
     server = HTTPServer(("0.0.0.0", PORT), Handler)
     log.info("CrewAI service on port %d (POST /crewai, GET /health)", PORT)
     server.serve_forever()

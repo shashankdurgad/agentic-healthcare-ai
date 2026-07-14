@@ -15,6 +15,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 import sys
+from overmind import entry_point, init, workflow
 
 # Add shared modules to path
 import os
@@ -138,6 +139,8 @@ async def startup_event():
     """Initialize the healthcare agent manager on startup"""
     global agent_manager
     
+    init(service_name="CrewAI Healthcare FHIR Agent")
+
     try:
         # Configure FHIR client
         fhir_config = FHIRConfig(
@@ -192,6 +195,7 @@ async def health_check():
 
 
 @app.post("/assessment/comprehensive")
+@entry_point("CrewAI Healthcare FHIR Agent")
 async def run_comprehensive_assessment(
     request: AssessmentRequest,
     background_tasks: BackgroundTasks,
@@ -227,6 +231,7 @@ async def run_comprehensive_assessment(
 
 
 @app.post("/assessment/emergency")
+@workflow("emergency")
 async def run_emergency_assessment(
     request: EmergencyRequest,
     background_tasks: BackgroundTasks,
@@ -267,6 +272,7 @@ async def run_emergency_assessment(
 
 
 @app.post("/assessment/medication-reconciliation")
+@workflow("medication_reconciliation")
 async def run_medication_reconciliation(
     request: MedicationReconciliationRequest,
     background_tasks: BackgroundTasks,
@@ -420,6 +426,7 @@ async def generate_assessment_pdf(
 
 # Frontend-compatible endpoints (match the paths expected by the UI)
 @app.post("/comprehensive")
+@workflow("comprehensive")
 async def run_comprehensive_assessment_compat(
     request: AssessmentRequest,
     background_tasks: BackgroundTasks,

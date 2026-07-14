@@ -12,6 +12,7 @@ import logging
 from datetime import datetime
 import sys
 import os
+from overmind import tool
 
 # Add shared modules to path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'shared'))
@@ -33,6 +34,7 @@ class HealthcareFunctionRegistry:
         self.fhir_tools = FHIRToolsForAgents(mcp_url)
         self.pdf_generator = PatientAssessmentReport()
     
+    @tool("get_patient_data")
     def get_patient_data(self, patient_id: str) -> str:
         """Retrieve comprehensive patient data from FHIR server"""
         try:
@@ -62,6 +64,7 @@ class HealthcareFunctionRegistry:
         except Exception as e:
             return json.dumps({"error": f"Failed to retrieve patient data: {str(e)}"})
     
+    @tool("check_drug_interactions")
     def check_drug_interactions(self, medications: List[str]) -> str:
         """Check for drug interactions among current medications"""
         try:
@@ -114,6 +117,7 @@ class HealthcareFunctionRegistry:
         except Exception as e:
             return json.dumps({"error": f"Failed to check interactions: {str(e)}"})
     
+    @tool("calculate_risk_scores")
     def calculate_risk_scores(self, patient_data: Dict[str, Any]) -> str:
         """Calculate various clinical risk scores"""
         try:
@@ -174,6 +178,7 @@ class HealthcareFunctionRegistry:
         except Exception as e:
             return json.dumps({"error": f"Failed to calculate risk scores: {str(e)}"})
     
+    @tool("generate_care_plan")
     def generate_care_plan(self, assessment_data: Dict[str, Any]) -> str:
         """Generate a comprehensive care plan based on assessment"""
         try:
@@ -221,6 +226,7 @@ class HealthcareFunctionRegistry:
         except Exception as e:
             return json.dumps({"error": f"Failed to generate care plan: {str(e)}"})
     
+    @tool("get_patient_comprehensive_assessment")
     def get_patient_comprehensive_assessment(self, patient_id: str) -> str:
         """Get comprehensive patient data using MCP FHIR tools for AI assessment"""
         try:
@@ -234,6 +240,7 @@ class HealthcareFunctionRegistry:
         except Exception as e:
             return json.dumps({"error": f"Failed to get patient assessment data: {str(e)}"})
     
+    @tool("get_encounter_analysis")
     def get_encounter_analysis(self, encounter_id: str) -> str:
         """Get encounter details for AI analysis using MCP FHIR tools"""
         try:
@@ -247,6 +254,7 @@ class HealthcareFunctionRegistry:
         except Exception as e:
             return json.dumps({"error": f"Failed to get encounter analysis: {str(e)}"})
     
+    @tool("get_vital_signs_trends")
     def get_vital_signs_trends(self, patient_id: str, days: int = 30) -> str:
         """Get vital signs trends for AI analysis using MCP FHIR tools"""
         try:
@@ -260,6 +268,7 @@ class HealthcareFunctionRegistry:
         except Exception as e:
             return json.dumps({"error": f"Failed to get vital signs trends: {str(e)}"})
     
+    @tool("generate_patient_assessment_pdf")
     def generate_patient_assessment_pdf(self, patient_id: str, assessment_data: str = None, filename: str = None) -> str:
         """Generate comprehensive patient assessment PDF report"""
         try:
@@ -282,6 +291,7 @@ class HealthcareFunctionRegistry:
         except Exception as e:
             return json.dumps({"error": f"Failed to generate assessment PDF: {str(e)}"})
     
+    @tool("run_clinical_decision_support")
     def run_clinical_decision_support(self, patient_data: str, clinical_context: str = "") -> str:
         """Run clinical decision support using patient data and context"""
         try:

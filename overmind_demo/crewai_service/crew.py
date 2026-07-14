@@ -11,6 +11,7 @@ import httpx
 from crewai import Agent, Crew, Process, Task
 from langchain.tools import BaseTool
 from langchain_openai import ChatOpenAI
+from overmind import tool as overmind_tool, workflow
 from pydantic import BaseModel, Field
 
 MCP_URL = os.environ.get("FHIR_MCP_URL", "http://fhir-mcp-server:8004").rstrip("/")
@@ -243,6 +244,7 @@ class FHIRPatientChartTool(BaseTool):
     )
     args_schema: Type[BaseModel] = PatientIdInput
 
+    @overmind_tool("fhir_patient_chart")
     def _run(self, patient_id: str) -> str:
         try:
             chart = fetch_fhir_chart(patient_id)
@@ -263,6 +265,7 @@ class MedicationSafetyTool(BaseTool):
     )
     args_schema: Type[BaseModel] = MedicationListInput
 
+    @overmind_tool("medication_safety_check")
     def _run(self, medications: str) -> str:
         text = medications.lower()
         findings = []
@@ -381,6 +384,7 @@ class FixtureHealthcareCrew:
             llm=self.llm,
         )
 
+    @workflow("comprehensive")
     def run(self, input_data: dict[str, Any]) -> dict[str, Any]:
         patient_id = input_data.get("patient_id") or "unknown"
         # Bootstrap chart via MCP so tasks have grounded context even if an agent skips tools.
@@ -470,6 +474,8 @@ class FixtureHealthcareCrew:
             existing = {getattr(t, "name", None) for t in (agent.tools or [])}
             merged = list(agent.tools or [])
             for tool in delegation_tools:
+                if getattr(tool, "name", None) == "Delegate work to coworker":
+                    tool._run = overmind_tool("Delegate work to coworker")(tool._run)
                 if getattr(tool, "name", None) not in existing:
                     merged.append(tool)
             agent.tools = merged

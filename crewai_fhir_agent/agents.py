@@ -12,6 +12,7 @@ import asyncio
 from datetime import datetime
 import sys
 import os
+from overmind import tool
 
 # Add shared modules to path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'shared'))
@@ -34,6 +35,7 @@ class FHIRPatientTool(BaseTool):
         super().__init__()
         object.__setattr__(self, 'fhir_tools', fhir_tools)
     
+    @tool("fhir_patient_retrieval")
     def _run(self, patient_id: str) -> str:
         """Retrieve comprehensive patient data via MCP"""
         try:
@@ -57,6 +59,7 @@ class ClinicalDecisionTool(BaseTool):
     def __init__(self):
         super().__init__()
     
+    @tool("clinical_decision_support")
     def _run(self, patient_summary: str, clinical_question: str) -> str:
         """Provide clinical decision support"""
         try:
@@ -92,6 +95,7 @@ class MedicationInteractionTool(BaseTool):
     def __init__(self):
         super().__init__()
     
+    @tool("medication_interaction_checker")
     def _run(self, medications_list: str) -> str:
         """Check medication interactions"""
         try:
@@ -127,6 +131,7 @@ class DiagnosticAssistantTool(BaseTool):
     def __init__(self):
         super().__init__()
     
+    @tool("diagnostic_assistant")
     def _run(self, symptoms: str, patient_history: str) -> str:
         """Provide diagnostic assistance"""
         try:
@@ -171,6 +176,7 @@ class FHIREncounterTool(BaseTool):
         super().__init__()
         object.__setattr__(self, 'fhir_tools', fhir_tools)
     
+    @tool("fhir_encounter_analysis")
     def _run(self, encounter_id: str) -> str:
         """Retrieve encounter analysis via MCP"""
         try:
@@ -196,6 +202,7 @@ class FHIRVitalSignsTool(BaseTool):
         super().__init__()
         object.__setattr__(self, 'fhir_tools', fhir_tools)
     
+    @tool("fhir_vital_signs_analysis")
     def _run(self, patient_id: str, days: str = "30") -> str:
         """Retrieve vital signs trends via MCP"""
         try:
@@ -221,6 +228,7 @@ class PDFAssessmentReportTool(BaseTool):
         super().__init__()
         object.__setattr__(self, 'fhir_tools', fhir_tools)
     
+    @tool("generate_assessment_pdf")
     def _run(self, patient_id: str, assessment_data: str = "", filename: str = "") -> str:
         """Generate PDF assessment report"""
         try:
