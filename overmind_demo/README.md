@@ -73,12 +73,14 @@ overmind optimize
 ## Layout
 
 ```text
-overmind_demo/
-├── crewai_service/     # CrewAI + FHIR MCP tools
-├── fixtures/           # seed source (same patient_* IDs as FHIR)
-├── scripts/seed_fhir.py
-├── docker-compose.yml  # hapi + mcp + seed + crewai + executioner
-└── eval/               # dataset, policies, eval_spec
+agentic-healthcare-ai/
+├── fhir_mcp_server/          # MCP server image (compose build context)
+└── overmind_demo/
+    ├── crewai_service/       # CrewAI + FHIR MCP tools
+    ├── fixtures/             # seed source (same patient_* IDs as FHIR)
+    ├── scripts/seed_fhir.py
+    ├── docker-compose.yml    # hapi + mcp + seed + crewai + executioner
+    └── eval/                 # dataset, policies, eval_spec
 ```
 
 Ports: HAPI `8085` (container `8080`), MCP `8004`, CrewAI `8090`.
